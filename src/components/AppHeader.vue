@@ -10,12 +10,22 @@
       <router-link to="/clients">Clientes</router-link>
       <router-link to="/payments">Ingresos</router-link>
       <router-link to="/settings">Ajustes</router-link>
+      <a href="#" @click.prevent="handleLogout" class="logout">Cerrar Sesión</a>
     </nav>
   </header>
 </template>
 
 <script setup>
-// Header doesn't need logic right now
+import { useRouter } from 'vue-router'
+import { useAuth } from '../composables/useAuth'
+
+const router = useRouter()
+const { logout } = useAuth()
+
+const handleLogout = () => {
+  logout()
+  router.push('/')
+}
 </script>
 
 <style scoped>
