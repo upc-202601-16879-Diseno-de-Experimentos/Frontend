@@ -1,5 +1,4 @@
 {
   "buildCommand": "npm run build",
-  "outputDir": "dist",
   "framework": "vue"
 }
