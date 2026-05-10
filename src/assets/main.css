@@ -10,28 +10,45 @@ body {
 header { 
   background: #FFFFFF; 
   color: #3D405B; 
-  padding: 20px 30px;
+  padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 4px 20px rgba(224, 122, 95, 0.08);
   border-bottom: 1px solid #F0E7E1;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 header h1 { 
-  font-size: 1.5rem; 
+  font-size: 1.3rem; 
   font-weight: 800;
   color: #E07A5F;
+  white-space: nowrap;
+}
+
+header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
 }
 
 header nav a {
   color: #82859C;
   text-decoration: none;
-  margin-left: 20px;
+  margin-left: 15px;
   font-weight: 600;
-  padding: 8px 12px;
-  border-radius: 12px;
+  padding: 6px 10px;
+  border-radius: 10px;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+header nav a:first-of-type {
+  margin-left: 0;
 }
 
 header nav a:hover { 
@@ -42,7 +59,52 @@ header nav a:hover {
 header nav .logout {
   color: #E07A5F;
   background: #FFF1EB;
-  margin-left: 20px;
+  margin-left: 15px;
+}
+
+@media (max-width: 1200px) {
+  header nav a, header nav .logout {
+    margin-left: 8px;
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+  header h1 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 900px) {
+  header {
+    padding: 12px 15px;
+  }
+  header nav {
+    gap: 4px;
+  }
+  header nav a, header nav .logout {
+    margin-left: 4px;
+    padding: 4px 6px;
+    font-size: 0.7rem;
+  }
+  header h1 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  header nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  header nav a, header nav .logout {
+    margin-left: 0;
+    margin-right: 8px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
 }
 
 .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }

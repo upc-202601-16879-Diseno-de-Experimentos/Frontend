@@ -17,14 +17,13 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { useAuth } from '../composables/useAuth'
 
 const router = useRouter()
-const { logout } = useAuth()
 
 const handleLogout = () => {
-  logout()
-  router.push('/')
+  localStorage.removeItem('coachToken')
+  localStorage.removeItem('coachUsername')
+  window.location.href = '/'
 }
 </script>
 
