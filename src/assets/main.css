@@ -39,6 +39,12 @@ header nav a:hover {
   background: #FFF1EB;
 }
 
+header nav .logout {
+  color: #E07A5F;
+  background: #FFF1EB;
+  margin-left: 20px;
+}
+
 .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
 
 .card {
