@@ -1,6 +1,6 @@
 <template>
   <header>
-    <h1>🎾 Coach Pro - Mi Panel de Entrenador</h1>
+    <h1>🎾 MatchPoint - Mi Panel de Entrenador</h1>
     <nav>
       <router-link to="/dashboard">Dashboard</router-link>
       <router-link to="/profile">Mi Perfil</router-link>
