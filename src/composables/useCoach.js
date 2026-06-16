@@ -50,13 +50,31 @@ export function useCoach() {
         // Load bookings
         try {
           const bookRes = await api.get(`/bookings/coach/${coach.id}`)
-          bookings.value = bookRes.data || []
+          const rawBookings = bookRes.data || []
+          
+          // Fetch all user profiles to map client names
+          let usersMap = {}
+          try {
+            const usersRes = await api.get('/user-profiles')
+            usersRes.data.forEach(u => {
+              usersMap[u.id] = u.name
+            })
+          } catch(e) { console.error('Could not fetch profiles for names') }
+          
+          bookings.value = rawBookings.map(b => {
+             const actualSchedule = b.schedule || b.startTime || b.date
+             return {
+                 ...b,
+                 schedule: actualSchedule,
+                 clientName: usersMap[b.userProfileId] || b.user?.name || `Cliente #${b.userProfileId || '?'}`
+             }
+          })
           
           // Extract unique clients
           const uniqueClients = {}
           bookings.value.forEach(b => {
-            const userId = b.user?.id || b.userProfileId
-            const userName = b.user?.name || `Cliente #${userId}`
+            const userId = b.userProfileId
+            const userName = b.clientName
             if (userId && !uniqueClients[userId]) {
               uniqueClients[userId] = {
                 id: userId,

@@ -18,8 +18,8 @@
         <span class="status-badge" :class="booking.status">{{ getStatusText(booking.status) }}</span>
       </div>
       <div class="booking-details">
-        <p><strong>Fecha:</strong> {{ formatDate(booking.schedule) }}</p>
-        <p><strong>Cliente ID:</strong> {{ booking.userProfileId }}</p>
+        <p><strong>Fecha y Hora:</strong> {{ formatDate(booking.schedule) }}</p>
+        <p><strong>Cliente:</strong> {{ booking.clientName }}</p>
       </div>
       
       <div class="booking-actions" v-if="booking.status === 'PENDING'">
