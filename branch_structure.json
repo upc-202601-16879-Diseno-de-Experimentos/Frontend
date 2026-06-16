@@ -1,0 +1,21 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "dev-local",
+    "develop",
+    "feature/sprint2",
+    "main"
+  ],
+  "parent": {
+    "dev-local": "main",
+    "develop": "main",
+    "feature/sprint2": "main",
+    "main": null
+  },
+  "order": [
+    "main",
+    "dev-local",
+    "develop",
+    "feature/sprint2"
+  ]
+}
