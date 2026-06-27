@@ -18,22 +18,22 @@
       <table class="payments-table">
         <thead>
           <tr>
+            <th>Transacción #</th>
             <th>Fecha</th>
             <th>Cliente</th>
-            <th>Servicio</th>
             <th>Monto</th>
             <th>Estado</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="booking in bookings" :key="booking.id">
-            <td>{{ new Date(booking.startTime).toLocaleDateString() }}</td>
-            <td>{{ booking.user?.name || 'Cliente' }}</td>
-            <td>{{ booking.coachService?.name || 'Servicio' }}</td>
-            <td>${{ (booking.amount || 0).toFixed(2) }}</td>
-            <td><span class="status-badge COMPLETED">Pagado</span></td>
+          <tr v-for="payment in payments" :key="payment.id">
+            <td>#{{ payment.id }}</td>
+            <td>{{ new Date(payment.paymentDate).toLocaleDateString() }}</td>
+            <td>{{ payment.user?.name || 'Cliente' }}</td>
+            <td>${{ (payment.amount || 0).toFixed(2) }}</td>
+            <td><span class="status-badge COMPLETED">{{ payment.status }}</span></td>
           </tr>
-          <tr v-if="bookings.length === 0">
+          <tr v-if="payments.length === 0">
             <td colspan="5" style="text-align: center; padding: 2rem;">No hay pagos registrados</td>
           </tr>
         </tbody>
@@ -46,9 +46,20 @@
 import { onMounted } from 'vue'
 import { useCoach } from '../composables/useCoach'
 
-const { stats, bookings, loadData } = useCoach()
+const { stats, payments, loadData } = useCoach()
 
 onMounted(async () => {
   await loadData()
 })
 </script>
+
+<style scoped>
+.status-badge.COMPLETED {
+  background: #81B29A;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+</style>

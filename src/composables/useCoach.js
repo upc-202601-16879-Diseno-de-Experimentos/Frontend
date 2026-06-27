@@ -7,6 +7,7 @@ const coachProfile = ref(null)
 const coachServices = ref([])
 const bookings = ref([])
 const clients = ref([])
+const payments = ref([])
 
 const stats = ref({
   totalServices: 0,
@@ -33,7 +34,11 @@ export function useCoach() {
 
       // 2. Get coach entity
       const coachesRes = await api.get('/coaches')
-      let coach = coachesRes.data.find(c => c.name === currentUser.value.username || c.email === currentUser.value.username)
+      let coach = coachesRes.data.find(c => 
+        c.name === currentUser.value.username || 
+        c.email === currentUser.value.username ||
+        (c.email && c.email.split('@')[0] === currentUser.value.username)
+      )
       
       if (!coach && coachesRes.data.length > 0) {
         // Fallback to first coach for testing if none matches
@@ -52,21 +57,26 @@ export function useCoach() {
           const bookRes = await api.get(`/bookings/coach/${coach.id}`)
           const rawBookings = bookRes.data || []
           
-          // Fetch all user profiles to map client names
+          // Fetch all user profiles to map client details
           let usersMap = {}
           try {
             const usersRes = await api.get('/user-profiles')
             usersRes.data.forEach(u => {
-              usersMap[u.id] = u.name
+              usersMap[u.id] = u
             })
-          } catch(e) { console.error('Could not fetch profiles for names') }
+          } catch(e) { console.error('Could not fetch profiles for details') }
           
           bookings.value = rawBookings.map(b => {
              const actualSchedule = b.schedule || b.startTime || b.date
+             const userProfile = usersMap[b.userProfileId] || {}
              return {
                  ...b,
                  schedule: actualSchedule,
-                 clientName: usersMap[b.userProfileId] || b.user?.name || `Cliente #${b.userProfileId || '?'}`
+                 clientName: userProfile.name || b.user?.name || `Cliente #${b.userProfileId || '?'}`,
+                 clientPhone: userProfile.phone || 'Sin teléfono',
+                 clientEmail: userProfile.email || 'Sin email',
+                 clientPhoto: userProfile.profileImageUrl || '',
+                 sportReserved: b.coachService?.name || 'Alquiler / Cancha'
              }
           })
           
@@ -74,11 +84,14 @@ export function useCoach() {
           const uniqueClients = {}
           bookings.value.forEach(b => {
             const userId = b.userProfileId
-            const userName = b.clientName
             if (userId && !uniqueClients[userId]) {
               uniqueClients[userId] = {
                 id: userId,
-                name: userName,
+                name: b.clientName,
+                phone: b.clientPhone,
+                email: b.clientEmail,
+                photo: b.clientPhoto,
+                sportReserved: b.sportReserved,
                 bookingsCount: 1,
                 lastBooking: b.startTime || b.schedule,
                 pendingBookings: b.status === 'PENDING' ? [b] : []
@@ -96,11 +109,20 @@ export function useCoach() {
           clients.value = []
         }
         
+        // Load payments from API
+        try {
+          const payRes = await api.get(`/payments/coach/${coach.id}`)
+          payments.value = payRes.data || []
+        } catch(e) {
+          console.error('Error fetching coach payments', e)
+          payments.value = []
+        }
+        
         stats.value = {
           totalServices: coachServices.value.length,
-          activeBookings: bookings.value.filter(b => b.status === 'CONFIRMED' || !b.status).length, // Bookings no tienen status aun en backend
+          activeBookings: bookings.value.filter(b => b.status === 'CONFIRMED' || b.status === 'COMPLETED').length,
           totalClients: clients.value.length,
-          totalIncome: bookings.value.reduce((acc, b) => acc + (b.amount || 0), 0)
+          totalIncome: payments.value.reduce((acc, p) => acc + (p.amount || 0), 0)
         }
       }
     } catch (e) {
@@ -116,6 +138,17 @@ export function useCoach() {
       return true
     } catch (e) {
       console.error('Error al crear servicio', e)
+      return false
+    }
+  }
+
+  const updateService = async (serviceId, serviceData) => {
+    try {
+      await api.put(`/coaches/services/${serviceId}`, serviceData)
+      await loadData()
+      return true
+    } catch (e) {
+      console.error('Error updating service', e)
       return false
     }
   }
@@ -147,9 +180,11 @@ export function useCoach() {
     coachServices,
     bookings,
     clients,
+    payments,
     stats,
     loadData,
     createService,
+    updateService,
     deleteService,
     updateBookingStatus
   }

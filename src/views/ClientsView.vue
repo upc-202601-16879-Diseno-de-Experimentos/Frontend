@@ -7,14 +7,22 @@
     </div>
 
     <div class="clients-list">
-      <div v-for="client in clients" :key="client.id" class="client-card" style="display: block;">
-        <div class="client-header" style="display: flex; align-items: center; margin-bottom: 12px;">
-          <div class="client-avatar">{{ client.name.charAt(0) }}</div>
-          <div class="client-info">
-            <h4>{{ client.name }}</h4>
-            <p class="client-bookings">{{ client.bookingsCount }} reservas totales</p>
-            <p>Última reserva: {{ formatDate(client.lastBooking) }}</p>
+      <div v-for="client in clients" :key="client.id" class="client-card" style="display: block; margin-bottom: 20px; border: 1px solid #F0E7E1; padding: 16px; border-radius: 16px;">
+        <div class="client-header" style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+          <img v-if="client.photo" :src="client.photo" alt="Avatar" class="client-avatar-img" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />
+          <div v-else class="client-avatar" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #E07A5F; color: white; font-weight: bold; font-size: 1.2rem;">{{ client.name.charAt(0).toUpperCase() }}</div>
+          
+          <div class="client-info" style="flex: 1;">
+            <h4 style="margin: 0 0 4px 0; color: #3D405B; font-size: 1.15rem;">{{ client.name }}</h4>
+            <p style="margin: 0; font-size: 0.85rem; color: #81B29A; font-weight: 600;">Deporte: {{ client.sportReserved }}</p>
           </div>
+        </div>
+        
+        <div class="client-details" style="background: #FFF9F5; padding: 12px; border-radius: 12px; font-size: 0.85rem; color: #5c5f73; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+          <div><strong>📞 Teléfono:</strong> {{ client.phone }}</div>
+          <div><strong>✉️ Email:</strong> {{ client.email }}</div>
+          <div><strong>📅 Reservas:</strong> {{ client.bookingsCount }} en total</div>
+          <div><strong>🕒 Última:</strong> {{ formatDate(client.lastBooking) }}</div>
         </div>
         
         <div class="client-pending-bookings" v-if="client.pendingBookings && client.pendingBookings.length > 0">
