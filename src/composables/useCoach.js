@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import api from '../services/api'
 import { useAuth } from './useAuth'
 
@@ -39,33 +39,57 @@ export function useCoach() {
         try {
           // 1. Get user profile
           let userId = currentUser.value.id
-          if (!userId) {
-            const usersRes = await api.get('/user-profiles')
-            const profile = usersRes.data.find(u => u.email === currentUser.value.username || u.name === currentUser.value.username)
-            if (profile) {
-              userId = profile.userId
-              currentUser.value.id = userId // Cache userId in currentUser
+          let userProfileObj = null
+          const usersRes = await api.get('/user-profiles')
+
+          if (userId) {
+            userProfileObj = usersRes.data.find(u => u.userId === userId)
+          }
+
+          if (!userProfileObj && currentUser.value.username) {
+            userProfileObj = usersRes.data.find(u => 
+              u.email === currentUser.value.username || 
+              u.name === currentUser.value.username ||
+              (u.email && u.email.split('@')[0] === currentUser.value.username)
+            )
+            if (userProfileObj) {
+              userId = userProfileObj.userId
+              currentUser.value.id = userId
             }
           }
-          
-          if (!userId) return
+
+          if (!userProfileObj) return
 
           // 2. Get coach entity
           let coach = coachProfile.value
-          if (!coach || force) {
+          const emailMismatch = coach && userProfileObj && coach.email && userProfileObj.email && 
+                                coach.email.toLowerCase() !== userProfileObj.email.toLowerCase()
+
+          if (emailMismatch || !coach || force) {
             const coachesRes = await api.get('/coaches')
             coach = coachesRes.data.find(c => 
-              c.name === currentUser.value.username || 
-              c.email === currentUser.value.username ||
-              (c.email && c.email.split('@')[0] === currentUser.value.username)
+              (c.email && userProfileObj.email && c.email.toLowerCase() === userProfileObj.email.toLowerCase()) ||
+              (c.name && userProfileObj.name && c.name.toLowerCase() === userProfileObj.name.toLowerCase())
             )
             
-            if (!coach && coachesRes.data.length > 0) {
-              // Fallback to first coach for testing if none matches
-              coach = coachesRes.data[coachesRes.data.length - 1]
-            }
             if (coach) {
               coachProfile.value = coach
+            } else {
+              coachProfile.value = null
+            }
+          }
+
+          if (!coach) {
+            // Reset state so old data doesn't persist
+            coachServices.value = []
+            bookings.value = []
+            clients.value = []
+            payments.value = []
+            stats.value = {
+              totalServices: 0,
+              activeBookings: 0,
+              totalClients: 0,
+              totalIncome: 0
             }
           }
           
@@ -230,6 +254,27 @@ export function useCoach() {
     }
   }
 
+  const clearData = () => {
+    coachProfile.value = null
+    coachServices.value = []
+    bookings.value = []
+    clients.value = []
+    payments.value = []
+    stats.value = {
+      totalServices: 0,
+      activeBookings: 0,
+      totalClients: 0,
+      totalIncome: 0
+    }
+    lastFetchTime = 0
+  }
+
+  watch(() => currentUser.value, (newVal) => {
+    if (!newVal || !newVal.username) {
+      clearData()
+    }
+  }, { deep: true })
+
   return {
     coachProfile,
     coachServices,
@@ -241,6 +286,7 @@ export function useCoach() {
     createService,
     updateService,
     deleteService,
-    updateBookingStatus
+    updateBookingStatus,
+    clearData
   }
 }

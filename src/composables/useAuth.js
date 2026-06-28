@@ -3,7 +3,10 @@ import api from '../services/api'
 import { useRouter } from 'vue-router'
 
 const token = ref(localStorage.getItem('coachToken'))
-const currentUser = ref({ username: localStorage.getItem('coachUsername') })
+const currentUser = ref({
+  id: localStorage.getItem('coachUserId') ? parseInt(localStorage.getItem('coachUserId')) : null,
+  username: localStorage.getItem('coachUsername')
+})
 
 export function useAuth() {
   const router = useRouter()
@@ -17,6 +20,7 @@ export function useAuth() {
         token.value = res.data.token
         localStorage.setItem('coachToken', token.value)
         localStorage.setItem('coachUsername', username)
+        localStorage.setItem('coachUserId', res.data.id.toString())
         currentUser.value = { id: res.data.id, username }
         // API interceptor will automatically use the new token
         return true
@@ -81,11 +85,57 @@ export function useAuth() {
     }
   }
 
+  const loginWithGoogle = async (idToken, role = 'ROLE_INSTRUCTOR') => {
+    try {
+      const res = await api.post('/authentication/google', { idToken, role })
+      if (res && res.data && res.data.token) {
+        token.value = res.data.token
+        localStorage.setItem('coachToken', token.value)
+        const username = res.data.username || 'google-user'
+        localStorage.setItem('coachUsername', username)
+        localStorage.setItem('coachUserId', res.data.id.toString())
+        currentUser.value = { id: res.data.id, username }
+        
+        if (role === 'ROLE_INSTRUCTOR') {
+          try {
+            await api.post('/user-profiles', {
+              userId: res.data.id,
+              name: username.split('@')[0],
+              email: username,
+              phone: '999999999',
+              address: '',
+              favoriteSports: ''
+            }, { headers: { Authorization: `Bearer ${token.value}` } })
+          } catch(e) {}
+
+          try {
+            await api.post('/coaches', {
+              name: username.split('@')[0],
+              expertise: 'Deporte',
+              phone: '999999999',
+              email: username,
+              sportType: 'General',
+              pricePerHour: 50,
+              location: '',
+              description: 'Registrado con Google',
+              experienceYears: 0
+            }, { headers: { Authorization: `Bearer ${token.value}` } })
+          } catch(e) {}
+        }
+        return true
+      }
+      return false
+    } catch(e) {
+      throw new Error('Error en inicio de sesión con Google')
+    }
+  }
+
   const logout = () => {
     token.value = null
     currentUser.value = null
     localStorage.removeItem('coachToken')
     localStorage.removeItem('coachUsername')
+    localStorage.removeItem('coachUserId')
     if (router) {
       router.push('/login')
     }
@@ -97,6 +147,8 @@ export function useAuth() {
     isAuthenticated,
     login,
     register,
+    loginWithGoogle,
     logout
   }
 }
+
