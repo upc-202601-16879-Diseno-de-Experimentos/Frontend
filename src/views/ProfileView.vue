@@ -88,10 +88,25 @@
             </div>
           </div>
           
-          <p v-if="successMsg" class="success">{{ successMsg }}</p>
-          <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
+          <!-- Global Validation Messages -->
+          <div v-if="validationErrors.length > 0" class="validation-banner" style="grid-column: span 2; background-color: #FFF5F5; border-left: 4px solid #E53E3E; padding: 14px 18px; border-radius: 12px; margin-top: 15px; box-shadow: 0 2px 4px rgba(229, 62, 62, 0.05);">
+            <div class="banner-title" style="font-weight: bold; color: #C53030; margin-bottom: 6px;">⚠️ Por favor corrige los siguientes errores de horario:</div>
+            <ul style="margin: 0; padding-left: 20px; color: #742A2A; font-size: 0.95rem;">
+              <li v-for="(err, i) in validationErrors" :key="i">{{ err }}</li>
+            </ul>
+          </div>
+          
+          <p v-if="successMsg" class="success" style="grid-column: span 2; color: #065F46; background-color: #ECFDF5; border: 1px solid #A7F3D0; padding: 10px 14px; border-radius: 10px; margin-top: 10px;">{{ successMsg }}</p>
+          <p v-if="errorMsg" class="error" style="grid-column: span 2; color: #991B1B; background-color: #FEF2F2; border: 1px solid #FCA5A5; padding: 10px 14px; border-radius: 10px; margin-top: 10px;">{{ errorMsg }}</p>
 
-          <button type="submit" class="btn" style="margin-top: 10px;">Guardar Cambios</button>
+          <button 
+            type="submit" 
+            class="btn" 
+            :disabled="validationErrors.length > 0"
+            :style="{ marginTop: '10px', opacity: validationErrors.length > 0 ? 0.6 : 1, cursor: validationErrors.length > 0 ? 'not-allowed' : 'pointer' }"
+          >
+            Guardar Cambios
+          </button>
         </form>
       </div>
 
@@ -121,12 +136,76 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, computed, onMounted } from 'vue'
 import { useCoach } from '../composables/useCoach'
 import api from '../services/api'
 
 const { coachProfile, loadData } = useCoach()
 const reviews = ref([])
+
+const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
+
+const weeklyAvailability = ref({
+  Lunes: { active: false, ranges: [] },
+  Martes: { active: false, ranges: [] },
+  Miercoles: { active: false, ranges: [] },
+  Jueves: { active: false, ranges: [] },
+  Viernes: { active: false, ranges: [] },
+  Sabado: { active: false, ranges: [] },
+  Domingo: { active: false, ranges: [] }
+})
+
+const displayDays = {
+  Lunes: 'Lunes',
+  Martes: 'Martes',
+  Miercoles: 'Miércoles',
+  Jueves: 'Jueves',
+  Viernes: 'Viernes',
+  Sabado: 'Sábado',
+  Domingo: 'Domingo'
+}
+
+// Validation logic
+const validationErrors = computed(() => {
+  const errors = []
+  daysOfWeek.forEach(day => {
+    const data = weeklyAvailability.value[day]
+    if (!data.active) return
+
+    if (data.ranges.length === 0) {
+      errors.push(`El día ${displayDays[day]} está disponible pero no tiene ningún rango.`)
+      return
+    }
+
+    const sortedRanges = []
+    data.ranges.forEach((r, idx) => {
+      if (!r.start || !r.end) {
+        errors.push(`En ${displayDays[day]}, el rango ${idx + 1} tiene horas incompletas.`)
+      } else {
+        if (r.start >= r.end) {
+          errors.push(`En ${displayDays[day]}, la hora de inicio (${r.start}) debe ser menor que la hora de fin (${r.end}).`)
+        }
+        sortedRanges.push({ start: r.start, end: r.end, index: idx })
+      }
+    })
+
+    sortedRanges.sort((a, b) => a.start.localeCompare(b.start))
+
+    for (let i = 0; i < sortedRanges.length - 1; i++) {
+      const current = sortedRanges[i]
+      const next = sortedRanges[i + 1]
+      
+      if (current.end > next.start) {
+        if (current.start === next.start && current.end === next.end) {
+          errors.push(`En ${displayDays[day]}, hay rangos duplicados: ${current.start} - ${current.end}.`)
+        } else {
+          errors.push(`En ${displayDays[day]}, el rango ${current.start}-${current.end} se superpone con ${next.start}-${next.end}.`)
+        }
+      }
+    }
+  })
+  return errors
+})
 
 const form = reactive({
   name: '',
@@ -142,17 +221,7 @@ const form = reactive({
   imageUrl: ''
 })
 
-const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 
-const weeklyAvailability = ref({
-  Lunes: { active: false, ranges: [] },
-  Martes: { active: false, ranges: [] },
-  Miercoles: { active: false, ranges: [] },
-  Jueves: { active: false, ranges: [] },
-  Viernes: { active: false, ranges: [] },
-  Sabado: { active: false, ranges: [] },
-  Domingo: { active: false, ranges: [] }
-})
 
 const parseAvailability = (availStr) => {
   const res = {}
