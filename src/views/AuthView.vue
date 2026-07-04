@@ -96,7 +96,7 @@ onMounted(async () => {
     window.location.hash = ''
     window.history.replaceState(null, '', window.location.pathname)
     try {
-      const ok = await loginWithGoogle(idToken, 'ROLE_USER')
+      const ok = await loginWithGoogle(idToken, 'ROLE_INSTRUCTOR')
       if (ok) {
         router.push('/dashboard')
       } else {
