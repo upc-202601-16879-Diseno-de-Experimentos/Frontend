@@ -109,8 +109,8 @@ onMounted(async () => {
 })
 
 const handleGoogleRedirect = () => {
-  const redirectUri = window.location.origin + '/login'
-  const nonce = Math.random().toString(36).substring(2)
+  const redirectUri = 'https://matchpoint-frontend-gules.vercel.app/login'
+  const nonce = 'matchpoint-' + Date.now()
   const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=id_token&scope=openid%20email%20profile&nonce=${nonce}&prompt=select_account`
   window.location.href = url
 }
