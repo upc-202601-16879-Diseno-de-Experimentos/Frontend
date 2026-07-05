@@ -98,28 +98,36 @@ export function useAuth() {
         
         if (role === 'ROLE_INSTRUCTOR') {
           try {
-            await api.post('/user-profiles', {
-              userId: res.data.id,
-              name: username.split('@')[0],
-              email: username,
-              phone: '999999999',
-              address: '',
-              favoriteSports: ''
-            }, { headers: { Authorization: `Bearer ${token.value}` } })
+            const upRes = await api.get('/user-profiles')
+            const upExists = upRes.data.some(u => u.email === username || u.userId === res.data.id)
+            if (!upExists) {
+              await api.post('/user-profiles', {
+                userId: res.data.id,
+                name: username.split('@')[0],
+                email: username,
+                phone: '999999999',
+                address: '',
+                favoriteSports: ''
+              }, { headers: { Authorization: `Bearer ${token.value}` } })
+            }
           } catch(e) {}
 
           try {
-            await api.post('/coaches', {
-              name: username.split('@')[0],
-              expertise: 'Deporte',
-              phone: '999999999',
-              email: username,
-              sportType: 'General',
-              pricePerHour: 50,
-              location: '',
-              description: 'Registrado con Google',
-              experienceYears: 0
-            }, { headers: { Authorization: `Bearer ${token.value}` } })
+            const cRes = await api.get('/coaches')
+            const cExists = cRes.data.some(c => c.email === username)
+            if (!cExists) {
+              await api.post('/coaches', {
+                name: username.split('@')[0],
+                expertise: 'Deporte',
+                phone: '999999999',
+                email: username,
+                sportType: 'General',
+                pricePerHour: 50,
+                location: '',
+                description: 'Registrado con Google',
+                experienceYears: 0
+              }, { headers: { Authorization: `Bearer ${token.value}` } })
+            }
           } catch(e) {}
         }
         return true
