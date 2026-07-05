@@ -5,7 +5,13 @@
     <div class="profile-container" v-if="coachProfile">
       <!-- Info Card (Read Only / General info) -->
       <div class="card profile-summary-card" style="margin-bottom: 20px; display: flex; align-items: center; gap: 20px;">
-        <img :src="coachProfile.imageUrl || 'https://images.unsplash.com/photo-1595152772835-219674b2a8a6'" alt="Profile Photo" class="profile-avatar-large" />
+        <div class="avatar-container" @click="triggerFileInput">
+          <img :src="coachProfile.imageUrl || 'https://images.unsplash.com/photo-1595152772835-219674b2a8a6'" alt="Profile Photo" class="profile-avatar-large" />
+          <div class="avatar-overlay">
+            <span class="pencil-icon">✏️</span>
+          </div>
+          <input type="file" ref="fileInput" accept="image/*" style="display: none" @change="onFileSelected" />
+        </div>
         <div>
           <h3>{{ coachProfile.name }}</h3>
           <p class="subtitle">{{ coachProfile.expertise }} • {{ coachProfile.location || 'Sin ubicación' }}</p>
@@ -142,6 +148,26 @@ import api from '../services/api'
 
 const { coachProfile, loadData } = useCoach()
 const reviews = ref([])
+const fileInput = ref(null)
+
+const triggerFileInput = () => {
+  if (fileInput.value) {
+    fileInput.value.click()
+  }
+}
+
+const onFileSelected = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const dataUrl = e.target.result
+      coachProfile.value.imageUrl = dataUrl
+      form.imageUrl = dataUrl
+    }
+    reader.readAsDataURL(file)
+  }
+}
 
 const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 
@@ -355,12 +381,44 @@ const updateProfile = async () => {
 </script>
 
 <style scoped>
-.profile-avatar-large {
+.avatar-container {
+  position: relative;
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  object-fit: cover;
+  cursor: pointer;
+  overflow: hidden;
   border: 3px solid #81B29A;
+  flex-shrink: 0;
+}
+
+.profile-avatar-large {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+}
+
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.avatar-container:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.pencil-icon {
+  font-size: 24px;
 }
 .subtitle {
   color: #82859C;
