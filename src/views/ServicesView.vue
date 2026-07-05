@@ -41,8 +41,8 @@
           <p style="color: #5c5f73; font-size: 0.9rem; margin-bottom: 16px; line-height: 1.4;">{{ service.description }}</p>
         </div>
         <div class="service-actions" style="display: flex; gap: 8px; justify-content: flex-end;">
-          <button class="btn" style="background: #F4A261; padding: 6px 12px; font-size: 0.85rem;" @click="startEdit(service)">Editar</button>
-          <button class="btn-delete" style="background: #E07A5F; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;" @click="handleDelete(service.id)">Eliminar</button>
+          <button class="btn" style="background: #F4A261 !important; color: white !important; border: none; padding: 6px 12px; font-size: 0.85rem; border-radius: 8px; cursor: pointer; font-weight: 600;" @click="startEdit(service)">Editar</button>
+          <button class="btn" style="background: #E07A5F !important; color: white !important; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;" @click="handleDelete(service.id)">Eliminar</button>
         </div>
       </div>
     </div>
