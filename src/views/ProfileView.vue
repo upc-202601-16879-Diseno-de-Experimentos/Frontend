@@ -377,7 +377,7 @@ const updateProfile = async () => {
     const updatedData = { ...coachProfile.value, ...form }
     await api.put(`/coaches/${coachProfile.value.id}`, updatedData)
     successMsg.value = 'Perfil actualizado exitosamente'
-    await loadData()
+    await loadData(true)
   } catch (e) {
     errorMsg.value = 'Error al actualizar el perfil'
   }
