@@ -67,7 +67,11 @@ export function useCoach() {
 
           if (emailMismatch || !coach || force) {
             const coachesRes = await api.get('/coaches')
-            coach = coachesRes.data.find(c => 
+            // Sort by id descending so we consistently get the latest created profile
+            // This prevents Postgres MVCC from randomly flipping the order of duplicates on update
+            const sortedCoaches = (coachesRes.data || []).sort((a, b) => b.id - a.id)
+            
+            coach = sortedCoaches.find(c => 
               (c.email && userProfileObj.email && c.email.toLowerCase() === userProfileObj.email.toLowerCase()) ||
               (c.name && userProfileObj.name && c.name.toLowerCase() === userProfileObj.name.toLowerCase())
             )
