@@ -86,7 +86,11 @@
             </div>
             <div class="form-group" style="grid-column: span 2;">
               <label>Imagen de Perfil (URL)</label>
-              <input v-model="form.imageUrl" type="url" placeholder="https://ejemplo.com/foto.jpg" />
+              <div v-if="form.imageUrl && form.imageUrl.startsWith('data:image')" style="padding: 10px 14px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; color: #065F46; font-weight: 500; display: flex; align-items: center; justify-content: space-between;">
+                <span>✓ Imagen cargada desde tu PC</span>
+                <button type="button" @click="form.imageUrl = ''; coachProfile.imageUrl = ''" style="background: none; border: none; color: #065F46; cursor: pointer; font-weight: bold; font-size: 1.1rem; padding: 0 4px;">✕</button>
+              </div>
+              <input v-else v-model="form.imageUrl" type="url" placeholder="https://ejemplo.com/foto.jpg" />
             </div>
             <div class="form-group" style="grid-column: span 2;">
               <label>Descripción / Biografía</label>
