@@ -3,13 +3,17 @@
     <h2>{{ isRegister ? 'Registro de Entrenador' : 'Acceso Entrenadores' }}</h2>
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
-        <label>Correo Electrónico (Usuario)</label>
-        <input v-model="form.username" type="email" placeholder="ejemplo@correo.com" required />
+        <label>Usuario</label>
+        <input v-model="form.username" type="text" required />
       </div>
       
       <div v-if="isRegister" class="form-group">
         <label>Nombre Completo</label>
-        <input v-model="form.name" type="text" placeholder="Ej. Juan Pérez" required />
+        <input v-model="form.name" type="text" required />
+      </div>
+      <div v-if="isRegister" class="form-group">
+        <label>Email</label>
+        <input v-model="form.email" type="email" required />
       </div>
       <div v-if="isRegister" class="form-group">
         <label>Teléfono</label>
@@ -141,7 +145,6 @@ const handleSubmit = async () => {
   
   try {
     if (isRegister.value) {
-      form.email = form.username
       await register(form)
       successMsg.value = 'Cuenta creada exitosamente. Por favor, inicia sesión.'
       isRegister.value = false
